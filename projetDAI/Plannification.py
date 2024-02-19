@@ -58,7 +58,6 @@ class Planification():
                                     # Gérer le cas où step2 est à la fin du plan
                                     agent1.plan.append(agent1.plan[-1])
                             else:
-                                agent = agent2
                                 if step2 < len(agent2.plan):
                                     agent2.plan.insert(step2 + 1, agent2.plan[step2])
                                 else:

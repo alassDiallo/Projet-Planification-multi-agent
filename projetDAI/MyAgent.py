@@ -135,7 +135,6 @@ class MyAgent:
                 print(move)
             else:
                 self.posX,self.posY=coor
-                print("pppppp",self.posX,self.posY)
             self.ex = self.ex +1
             
             return move
