@@ -12,6 +12,7 @@ class MyAgentStones(MyAgent):
         self.bag_contents = []
         self.stone = 0
         self.backPack = capacity
+        self.priority=1
 
     # return quantity of precious stones collected and not unloaded yet
     def getTreasure(self):

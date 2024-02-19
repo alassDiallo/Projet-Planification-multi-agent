@@ -12,6 +12,7 @@ class MyAgentGold(MyAgent):
         self.bag_contents = []
         self.gold = 0 # the quantity of gold collected and not unloaded yet
         self.backPack = capacity #capacity of the agent's back pack
+        self.priority=1
 
 
     #return quantity of gold collected and not unloaded yet

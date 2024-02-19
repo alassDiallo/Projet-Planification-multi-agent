@@ -5,6 +5,7 @@ from MyAgentChest import MyAgentChest
 from MyAgentStones import MyAgentStones
 from Treasure import Treasure
 from TacheAllocation import TacheAllocation
+from Plannification import Planification
 
 def loadFileConfig(nameFile) :
 
@@ -73,22 +74,20 @@ def main():
                         rp.make_bid(env.grilleTres[i][j],i,j,tache)
                     print(tache.auctions)
                     tache.resolve_auctions()
-
+                #enchere pour le tresors en or
                 elif env.grilleTres[i][j].type == 1:
                     tache.start_auction_for_treasure(env.grilleTres[i][j],i,j)
                     for ro in ramasseurOr:
                         ro.make_bid(env.grilleTres[i][j],i,j,tache)
                     print(tache.auctions)
                     tache.resolve_auctions()
-
+                #enchere pour tous les tresors qui doivebt etre ouvert par les agents deverouilleurs
                 tache.start_auction_for_treasure(env.grilleTres[i][j],i,j)
                 for d in deverouilleur:
                     d.make_bid(env.grilleTres[i][j],i,j,tache)
                 print(tache.auctions)
                 tache.resolve_auctions()
-    #TacheAllocation(env).getAgent()
-    #print(env.auctions)
-    #env.resolve_auctions()
+    
     for a in lAg.values() :
         print("----------------------------")
         print(a)
@@ -96,30 +95,22 @@ def main():
             print(t,"  ",t["treasure"].value)
         a.planindividuel(tache)
         print("--------------------------")
-    for a in lAg.values() :
+    Planification(env=env).resoudre_conflits()
+    """for a in lAg.values() :
         ags = [ags for ags in lAg.values() if ags != a]
         print("----------------------------")
         a.executer_plan(ags)
-        print("--------------------------")
-    aw={}
-    for i in range(20):
-        """for id_agent, indice in list(aw.items()):
-            agent = lAg[id_agent]
-            move = agent.executionPlanIndividuel(tache=tache,i=indice)
-            if move != -1:  # Si le mouvement est réussi ou non nécessaire
-                del aw[id_agent] """
-        print("------------------------",i,"---------------------------------------")
+        print("--------------------------")"""
+   
+    for i in range(10):
+        print("--------------------",i,"-------------------------------------------")
         for a in lAg.values():
            # if a.getId() not in aw:  # S'assurer que l'agent n'est pas déjà traité
             m = a.executionPlanIndividuel(tache=tache,i=i)
-            if m == 1:
-                a.ex = a.ex + 1 
-            #m = a.executionPlanIndividuel(tache=tache,i=i)
-            #if m == -1:
-               
-                #continue
-        print("---------------------------------------------------------------------")
-
+            #if m == 1:
+            #    a.ex = a.ex + 1
+        print("-----------------------------------------------------------------------")
+            
     #Exemple where the agents move and open a chest and pick up the treasure
     lAg.get("agent0").move(7,4,7,3)
     lAg.get("agent0").move(7, 3, 6, 3)

@@ -124,13 +124,62 @@ class MyAgent:
 
     def executionPlanIndividuel(self,tache,i):
         x = self.ex
+        
         if x+1 < len(self.plan):
             coor = self.plan[x+1]
             s= (self.posX,self.posY,coor[0],coor[1])
             print(self,s)
             move = self.move(self.posX,self.posY,coor[0],coor[1])
-            print(move)
+            #move = self.move(self.posX,self.posY,coor[0],coor[1])
+            if move == 1:
+                print(move)
+            else:
+                self.posX,self.posY=coor
+                print("pppppp",self.posX,self.posY)
+            self.ex = self.ex +1
+            
             return move
+            """elif move == -1:
+                print(coor[0],coor[1])
+                print(self.env.grilleAgent[coor[0]][coor[1]])
+                agent = self.env.grilleAgent[coor[0]][coor[1]]
+                print(agent)
+                self.send(agent.getId(),f"can you pease leave this grille i need to pass")
+                agent.readMail()
+                m = tache.neighbors(id=(coor[0],coor[1]))
+                if agent.ex+1 < len(agent.plan):
+                    coordA = agent.plan[agent.ex+1]
+                else:
+                    coordA = agent.plan[agent.ex]
+                m1 = tache.neighbors(id=coordA)
+                ensemble1 = set(m)
+                ensemble2 = set(m1)
+
+                # Trouver l'intersection des ensembles
+                intersection = ensemble1.intersection(ensemble2)
+
+                # Convertir l'intersection en liste (si nécessaire)
+                intersection_liste = list(intersection)
+
+                # Afficher le résultat
+                print("intersection------------------",intersection_liste)
+                print(agent.posX,agent.posY,"+",coordA)
+
+                #m = m1[0]
+                print(m1)
+                print(m)
+                print(agent.posX,agent.posY,intersection_liste[0][0],intersection_liste[0][1])
+                mv = agent.move(agent.posX,agent.posY,intersection_liste[0][0],intersection_liste[0][1])
+                if mv == 1:
+                    move = self.move(self.posX,self.posY,coor[0],coor[1])
+                    return move
+                elif mv==-1:
+                    #return agent.executionPlanIndividuel(tache=tache,i=i)
+                    print("move conflic ",mv)
+                    s = (self.posX,self.posY,coor[0],coor[1])
+                
+                return move
+                print("=>",s)"""
         """if i < len(self.plan)-1:
             coor = self.plan[i+1]
             s= (self.posX,self.posY,coor[0],coor[1])
@@ -219,7 +268,7 @@ class MyAgent:
         for i,position in enumerate(self.plan):
             conflit, agent_conflit = self.detecter_conflit(position, autres_agents,i)
             if conflit:
-                #print(f"Conflit détecté avec l'agent {agent_conflit.id} en {position}")
+                print(f"Conflit détecté avec l'agent {agent_conflit.id} en {position}")
                 conf.append({
                     "conflit pos ":position,
                     "agent impliques":[self.id,agent_conflit.id]
@@ -229,7 +278,7 @@ class MyAgent:
                 #self.deplacer_vers(position)
             #print("pas de confil")
         
-        print(conf)
+        print(len(conf))
                 
     
 

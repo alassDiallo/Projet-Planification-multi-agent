@@ -9,6 +9,7 @@ class MyAgentChest(MyAgent) :
     def __init__(self, id, initX, initY, env):
         MyAgent.__init__(self, id, initX, initY, env)
         self.bag_contents = []
+        self.priority=3
 
 
     # open a chest
