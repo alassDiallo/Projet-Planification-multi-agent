@@ -1,7 +1,7 @@
 #taille env
-16 16
+20 20
 # position depot
-0 0
+19 6
 # tresors tres:type:posX:posY:value
 tres:or:2:10:2
 tres:pierres:3:1:3

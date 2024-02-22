@@ -10,6 +10,7 @@ class MyAgentChest(MyAgent) :
         MyAgent.__init__(self, id, initX, initY, env)
         self.bag_contents = []
         self.priority=3
+        self.goal = []
 
 
     # open a chest
@@ -49,54 +50,82 @@ class MyAgentChest(MyAgent) :
         min = len(chemin)
         for tr in self.bag_contents[1:]:
             c = tache.a_star_search(start=(self.posX,self.posY), goal=tr["position"],grid=tache)
-            print(min,">",len(c),"=>",min > len(c), c)
             if min > len(c):
                 min = len(c)
                 chemin = c
                 treasure = tr
-        print(chemin," position : ",treasure["position"])
         return chemin,treasure
-        
+    
+    def plan_termine(self):
+        # Retourne True si toutes les actions du plan ont été effectuées
+        return self.index_plan >= len(self.plan)
         
     def planindividuel(self,tache):
         x,y = self.posX,self.posY
         while self.bag_contents:
-            print("-----------------------------------------------------")
             objectif,treasure = self.trouver_chemin_vers_tresor_plus_proche(tache)
             self.plan.extend(objectif[1:])
-            print(objectif,objectif[1:])
             self.posX,self.posY= treasure['position']
+            self.goal.append(treasure['position'])
             self.bag_contents.remove(treasure)
-            
-            """for coor in objectif[1:]:
-                s = (self.posX,self.posY,coor[0],coor[1])
-                print("=>",s)
-                move = self.move(self.posX,self.posY,coor[0],coor[1])
-                if move == 1:
-                    print(move)
-                elif move == -1:
-                    print(move)
-                    agent = self.env.grilleAgent[coor[0]][coor[1]]
-                    print(agent.getId())
-                    self.send(agent.getId(),f"can you pease leave this grille i need to pass")
-                    agent.readMail()
-                    m = tache.neighbors(id=(coor[0],coor[1]))
-                    m = m[0]
-                    agent.move(agent.posX,agent.posY,m[0],m[1])
-                    s = (self.posX,self.posY,coor[0],coor[1])
-                    self.move(self.posX,self.posY,coor[0],coor[1])
-                    print("=>",s)
-            if type(self).__name__== "MyAgentStones" or type(self).__name__== "MyAgentGold":
-                self.load(self.env)
-            elif type(self).__name__== "MyAgentChest":
-                self.env.open(self,self.posX,self.posY)
-            print(len(self.bag_contents))
-            self.bag_contents.remove(treasure)
-            print(len(self.bag_contents))
-            print("------------------------------------------------")"""
         self.plan.insert(0,(x,y))
-        print(self,"========>",self.plan)
-        print("longuer plan ",len(self.plan))
         self.posX,self.posY=x,y
+    
+    """def executionPlanIndividuel(self):
+        x = self.index_plan
+        if not self.plan_termine():
+            if (self.posX,self.posY) in self.goal:
+                self.open()
+                self.goal.remove((self.posX,self.posY))
+            else:
+                if x+1 < len(self.plan):
+                    print("position ",self.plan[x],self.plan[x+1])
+                    coor = self.plan[x+1]
+                    x,y=self.plan[x]
+                    s= (x,y,coor[0],coor[1])
+                    print(self,s)
+                    move = self.move(x,y,coor[0],coor[1])
+                    #move = self.move(self.posX,self.posY,coor[0],coor[1])
+                    if move == 1:
+                        pass
+                    else:
+                        self.posX,self.posY=coor
+                    self.index_plan = self.index_plan + 1
+                else:
+                    x,y=self.posX,self.posY
+                    print(self.env.agentSet)
+                    self.env.agentSet = { a_id:agent for a_id,agent in self.env.agentSet.items() if a_id != self.getId()}
+                    print(self.env.agentSet)
+                    print("fin plan avant supp----------------------------- ",self.env.grilleAgent[x][y])
+                    self.env.grilleAgent[x][y]=None
+                    print("fin plan apres supp----------------------------- ",self.env.grilleAgent[x][y])
+                    #return True
+            self.index_plan = self.index_plan + 1
+                #return move
+        else:
+            x,y=self.posX,self.posY
+            print("fin plan avant supp ",self.env.grilleAgent[x][y])
+            del self.env.agentSet[self.getId()]
+            self.env.grilleAgent[x][y]=None
+            print("fin plan apres supp ",self.env.grilleAgent[x][y])"""
+    def executionPlanIndividuel(self):
+        x = self.index_plan
+        if not self.plan_termine():
+            if (self.posX, self.posY) in self.goal:
+                self.open()
+                self.goal.remove((self.posX, self.posY))
+            else:
+                self.index_plan += 1
+                if x < len(self.plan):
+                    coor = self.plan[x]
+                    move = self.move(self.posX, self.posY, coor[0], coor[1])
+                    if move != 1:
+                        self.posX, self.posY = coor
+        else:
+            x, y = self.posX, self.posY
+            del self.env.agentSet[self.getId()]
+            self.env.grilleAgent[x][y] = None
+
+            
 
     

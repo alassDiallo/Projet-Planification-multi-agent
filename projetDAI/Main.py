@@ -26,7 +26,6 @@ def loadFileConfig(nameFile) :
         if(ligneSplit[0]=="tres"): # new treasure
             if(ligneSplit[1]=="or"):
                 env.addTreasure(Treasure(1, int(ligneSplit[4])), int(ligneSplit[2]), int(ligneSplit[3]))
-
             elif(ligneSplit[1]=="pierres"):
                 tres = Treasure(2, int(ligneSplit[4]))
                 env.addTreasure(tres, int(ligneSplit[2]), int(ligneSplit[3]))
@@ -59,10 +58,16 @@ def loadFileConfig(nameFile) :
 
 
 def main():
+
+    ##############################################
+    ####### TODO #################################
+    ##############################################
     env, lAg = loadFileConfig("env1.txt")
     agents = lAg.values()
+
+    #auction for each treasur to assign a task for each agent
+
     tache=TacheAllocation(env)
-    print(lAg)
     for i in range(env.tailleX):
         for j in range(env.tailleY):
             if env.grilleTres[i][j] is not None:
@@ -72,47 +77,66 @@ def main():
                     tache.start_auction_for_treasure(env.grilleTres[i][j],i,j)
                     for rp in ramasseurPierre:
                         rp.make_bid(env.grilleTres[i][j],i,j,tache)
-                    print(tache.auctions)
                     tache.resolve_auctions()
                 #enchere pour le tresors en or
                 elif env.grilleTres[i][j].type == 1:
                     tache.start_auction_for_treasure(env.grilleTres[i][j],i,j)
                     for ro in ramasseurOr:
                         ro.make_bid(env.grilleTres[i][j],i,j,tache)
-                    print(tache.auctions)
                     tache.resolve_auctions()
                 #enchere pour tous les tresors qui doivebt etre ouvert par les agents deverouilleurs
                 tache.start_auction_for_treasure(env.grilleTres[i][j],i,j)
                 for d in deverouilleur:
                     d.make_bid(env.grilleTres[i][j],i,j,tache)
-                print(tache.auctions)
                 tache.resolve_auctions()
-    
+
+    s = Planification(env=env).somme_valeurs_tresors()
+
+    # make the agents plan their actions (off-line phase)
+    #Planification Individuel
+    print("Planification individuel")
     for a in lAg.values() :
-        print("----------------------------")
+        print("--------------------------------------------------")
         print(a)
         for t in a.bag_contents:
-            print(t,"  ",t["treasure"].value)
+            print(t)
         a.planindividuel(tache)
-        print("--------------------------")
+        print(f"plan individuel {a} : ",a.plan)
+        print("--------------------------------------------------")
+        print("\n")
+
+    #Plan global avec resolution des conflits
+        
     Planification(env=env).resoudre_conflits()
-    """for a in lAg.values() :
-        ags = [ags for ags in lAg.values() if ags != a]
-        print("----------------------------")
-        a.executer_plan(ags)
-        print("--------------------------")"""
-   
-    for i in range(10):
+    for a in lAg.values() :
+        print("--------------------------------------------------")
+        print(a)
+        print(f"plan individuel {a} : ",a.plan)
+        print("--------------------------------------------------")
+        print("\n")
+    print(env)
+
+
+    # make the agents execute their plans
+
+    Planification(env=env).executonPlanGlobal()
+    #Planification(env=env).tous_tresors_ramasses()
+    """for i in range(10):
         print("--------------------",i,"-------------------------------------------")
         for a in lAg.values():
            # if a.getId() not in aw:  # S'assurer que l'agent n'est pas déjà traité
-            m = a.executionPlanIndividuel(tache=tache,i=i)
+            m = a.executionPlanIndividuel()
             #if m == 1:
             #    a.ex = a.ex + 1
-        print("-----------------------------------------------------------------------")
+        print(env)
+        print("-----------------------------------------------------------------------")"""
+    for x in range(env.tailleX):
+            for y in range(env.tailleY):
+                if env.grilleAgent[x][y] is not None:
+                    print(env.grilleAgent[x][y])
             
     #Exemple where the agents move and open a chest and pick up the treasure
-    lAg.get("agent0").move(7,4,7,3)
+    """lAg.get("agent0").move(7,4,7,3)
     lAg.get("agent0").move(7, 3, 6, 3)
     lAg.get("agent0").open()
     print(env)
@@ -141,23 +165,8 @@ def main():
     #  Example where the agents communicate
 
     lAg.get("agent2").send("agent4", "Hello !")
-    lAg.get("agent4").readMail()
-
-
-    ##############################################
-    ####### TODO #################################
-    ##############################################
-
-    # make the agents plan their actions (off-line phase)
-
-
-    # make the agents execute their plans
-
-
-
+    lAg.get("agent4").readMail()"""
     # print each agent's score
-
-
     print("\n\n******* SCORE TOTAL : {}".format(env.getScore()))
-    print(tache.a_star_search(start=(5,1), goal=(5,3),grid=tache))
+    print("\n\n******* SOMME TOTALe TRESORS : {}".format(s))
 main()

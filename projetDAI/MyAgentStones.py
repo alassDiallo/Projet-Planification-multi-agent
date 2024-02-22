@@ -3,6 +3,7 @@ import math
 
 
 
+
 #inherits MyAgent
 
 class MyAgentStones(MyAgent):
@@ -13,6 +14,7 @@ class MyAgentStones(MyAgent):
         self.stone = 0
         self.backPack = capacity
         self.priority=1
+        self.goal = []
 
     # return quantity of precious stones collected and not unloaded yet
     def getTreasure(self):
@@ -60,26 +62,9 @@ class MyAgentStones(MyAgent):
         bid_value = distance
         return bid_value
     
-    def collecter_tresor(agent, tresor, tresors):
-        if agent.position == tresor:
-            agent.tresors_collectes.append(tresor)  # Ou toute autre logique de collecte
-            tresors.remove(tresor)
-
-    def collecter_tous_les_tresors(agent, tresors, grille):
-        while tresors:
-            chemin = trouver_chemin_vers_tresor_plus_proche(agent.position, tresors, grille)
-            for pos in chemin:
-                agent.deplacer_vers(pos)
-                if pos in tresors:
-                    collecter_tresor(agent, pos, tresors)
-                    break  # Sortir de la boucle pour replanifier si nécessaire
-
-
-    
     def trouver_chemin_vers_tresor_plus_proche(self, tache):
         # Trouver le trésor le plus proche
         content = self.backPack - self.stone
-        print("---------content---------",content)
         treasure = [ t for t in self.bag_contents if (self.backPack - self.stone) >= t['treasure'].value]
         if treasure:
             t = treasure[0]
@@ -88,13 +73,10 @@ class MyAgentStones(MyAgent):
             min = len(chemin)
             for tr in treasure[1:]:
                 c = tache.a_star_search(start=(self.posX,self.posY), goal=tr["position"],grid=tache)
-                print(min,">",len(c),"=>",min > len(c), c)
                 if min > len(c):
                     min = len(c)
                     chemin = c
                     t = tr
-            print(chemin," position : ",t["position"])
-            
             return chemin,t
         else:
             chemin_vers_depot = tache.a_star_search(start=(self.posX,self.posY), goal=self.env.posUnload,grid=tache)
@@ -104,51 +86,57 @@ class MyAgentStones(MyAgent):
     def planindividuel(self,tache):
         x,y = self.posX,self.posY
         while self.bag_contents:
-            print("-----------------------------------------------------")
             objectif,treasure = self.trouver_chemin_vers_tresor_plus_proche(tache)
             self.plan.extend(objectif[1:])
-            print("============>>>>",objectif,"<<<<<=======================")
-            print(treasure)
             if treasure:
                 self.stone = self.stone + treasure["treasure"].value
-                print(f" backpack ={self.backPack},stone = {self.stone} ==> {self.stone + treasure['treasure'].value}")
                 self.posX,self.posY = treasure['position']
+                self.goal.append(treasure['position'])
                 self.bag_contents.remove(treasure)
             else:
                 self.posX,self.posY = self.env.posUnload
+                self.goal.append(self.env.posUnload)
                 self.stone=0
-            
-            """for coor in objectif[1:]:
-                s = (self.posX,self.posY,coor[0],coor[1])
-                print("=>",s)
-                move = self.move(self.posX,self.posY,coor[0],coor[1])
-                if move == 1:
-                    print(move)
-                elif move == -1:
-                    print(move)
-                    agent = self.env.grilleAgent[coor[0]][coor[1]]
-                    print(agent.getId())
-                    self.send(agent.getId(),f"can you pease leave this grille i need to pass")
-                    agent.readMail()
-                    m = tache.neighbors(id=(coor[0],coor[1]))
-                    m = m[0]
-                    agent.move(agent.posX,agent.posY,m[0],m[1])
-                    s = (self.posX,self.posY,coor[0],coor[1])
-                    self.move(self.posX,self.posY,coor[0],coor[1])
-                    print("=>",s)
-            if type(self).__name__== "MyAgentStones" or type(self).__name__== "MyAgentGold":
-                self.load(self.env)
-            elif type(self).__name__== "MyAgentChest":
-                self.env.open(self,self.posX,self.posY)
-            print(len(self.bag_contents))
-            self.bag_contents.remove(treasure)
-            print(len(self.bag_contents))
-            print("------------------------------------------------")"""
         chemin_vers_depot = tache.a_star_search(start=(self.posX,self.posY), goal=self.env.posUnload,grid=tache)
         self.plan.extend(chemin_vers_depot[1:])
         self.plan.insert(0,(x,y))
-        print(self,"========>",self.plan)
-        print("longuer plan ",len(self.plan))
+        self.goal.append(self.env.posUnload)
         self.posX,self.posY=x,y
+
+    def plan_termine(self):
+        # Retourne True si toutes les actions du plan ont été effectuées
+        return self.index_plan >= len(self.plan)
         
+    def executionPlanIndividuel(self):
+        x = self.index_plan
+        if not self.plan_termine():
+            if (self.posX, self.posY) in self.goal:
+                if not self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
+                    self.env.load(self)
+                    self.goal.remove((self.posX, self.posY))
+                else:
+                    if self.stone > 0:
+                        self.unload()
+                    else:
+                        self.index_plan += 1
+                        if x < len(self.plan):
+                            coor = self.plan[x]
+                            move = self.move(self.posX, self.posY, coor[0], coor[1])
+                            if move != 1:
+                                self.posX, self.posY = coor
+            else:
+                self.index_plan += 1
+                if x < len(self.plan):
+                    coor = self.plan[x]
+                    move = self.move(self.posX, self.posY, coor[0], coor[1])
+                    if move != 1:
+                        self.posX, self.posY = coor
+        else:
+            if self.stone > 0 and self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
+                self.unload()
+            x, y = self.posX, self.posY
+            del self.env.agentSet[self.getId()]
+            self.env.grilleAgent[x][y] = None
+
+
 

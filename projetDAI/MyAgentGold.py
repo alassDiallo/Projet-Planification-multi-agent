@@ -13,6 +13,7 @@ class MyAgentGold(MyAgent):
         self.gold = 0 # the quantity of gold collected and not unloaded yet
         self.backPack = capacity #capacity of the agent's back pack
         self.priority=1
+        self.goal = []
 
 
     #return quantity of gold collected and not unloaded yet
@@ -82,7 +83,6 @@ class MyAgentGold(MyAgent):
             min = len(chemin)
             for tr in treasure[1:]:
                 c = tache.a_star_search(start=(self.posX,self.posY), goal=tr["position"],grid=tache)
-                print(min,">",len(c),"=>",min > len(c), c)
                 if min > len(c):
                     min = len(c)
                     chemin = c
@@ -103,50 +103,21 @@ class MyAgentGold(MyAgent):
         x,y = self.posX,self.posY
         #tant que l'agent a des tresors à aller chercher on calcule le chemin le plus court vers le tresors le plus proche
         while self.bag_contents:
-            print("-----------------------------------------------------")
             #on fait appel à la methode trouver_chemin_vers_tresor_plus_proche pour retrouver le tresors ainsi que le le chemin vers le tresors le plus proche
             objectif,treasure = self.trouver_chemin_vers_tresor_plus_proche(tache)
             self.plan.extend(objectif[1:])
-            print("============>>>>",objectif,"<<<<<=======================")
-            print(treasure)
             #si on a un tresors alors on ajoute son chemin dans notre plan et on le supprime des taches que l'agent doit accomplir
             if treasure:
                 self.gold = self.gold + treasure["treasure"].value
-                print(f" backpack ={self.backPack},gold = {self.gold} ==> {self.gold + treasure['treasure'].value}")
                 self.posX,self.posY = treasure['position']
+                self.goal.append(treasure['position'])
                 self.bag_contents.remove(treasure)
             # si on a pas de tresor c'est a dire l'agent a des tresors qui lui reste à ramasser et qu'il n'a pas assez de place dans son sac alors, il doit se rendre vers le point de collecte pour decherger
             # ainsi on ajoute le chemin vers le point de collecte dans son plan
             else:
                 self.posX,self.posY = self.env.posUnload
+                self.goal.append(self.env.posUnload)
                 self.gold=0
-            
-            """for coor in objectif[1:]:
-                s = (self.posX,self.posY,coor[0],coor[1])
-                print("=>",s)
-                move = self.move(self.posX,self.posY,coor[0],coor[1])
-                if move == 1:
-                    print(move)
-                elif move == -1:
-                    print(move)
-                    agent = self.env.grilleAgent[coor[0]][coor[1]]
-                    print(agent.getId())
-                    self.send(agent.getId(),f"can you pease leave this grille i need to pass")
-                    agent.readMail()
-                    m = tache.neighbors(id=(coor[0],coor[1]))
-                    m = m[0]
-                    agent.move(agent.posX,agent.posY,m[0],m[1])
-                    s = (self.posX,self.posY,coor[0],coor[1])
-                    self.move(self.posX,self.posY,coor[0],coor[1])
-                    print("=>",s)
-            if type(self).__name__== "MyAgentStones" or type(self).__name__== "MyAgentGold":
-                self.load(self.env)
-            elif type(self).__name__== "MyAgentChest":
-                self.env.open(self,self.posX,self.posY)
-            print(len(self.bag_contents))
-            self.bag_contents.remove(treasure)
-            print(len(self.bag_contents))
-            print("------------------------------------------------")"""
         """
         Aprés avoir calculer le plan individuel de l'agent on doit remettre sa position à sa position initiale
         et ajouter le chemin vers le point de collecte pour decharger les tresors qu'il à ramasser
@@ -154,9 +125,43 @@ class MyAgentGold(MyAgent):
         chemin_vers_depot = tache.a_star_search(start=(self.posX,self.posY), goal=self.env.posUnload,grid=tache)
         self.plan.extend(chemin_vers_depot[1:])
         self.plan.insert(0,(x,y))
-        print(self,"========>",self.plan)
-        print("longuer plan ",len(self.plan))
+        self.goal.append(self.env.posUnload)
         self.posX,self.posY=x,y
+
+    def plan_termine(self):
+        # Retourne True si toutes les actions du plan ont été effectuées
+        return self.index_plan >= len(self.plan)
+
+    def executionPlanIndividuel(self):
+        x = self.index_plan
+        if not self.plan_termine():
+            if (self.posX, self.posY) in self.goal:
+                if not self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
+                    self.env.load(self)
+                    self.goal.remove((self.posX, self.posY))
+                else:
+                    if self.gold > 0:
+                        self.unload()
+                    else:
+                        self.index_plan += 1
+                        if x < len(self.plan):
+                            coor = self.plan[x]
+                            move = self.move(self.posX, self.posY, coor[0], coor[1])
+                            if move != 1:
+                                self.posX, self.posY = coor
+            else:
+                self.index_plan += 1
+                if x < len(self.plan):
+                    coor = self.plan[x]
+                    move = self.move(self.posX, self.posY, coor[0], coor[1])
+                    if move != 1:
+                        self.posX, self.posY = coor
+        else:
+            if self.gold > 0 and self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
+                self.unload()
+            x, y = self.posX, self.posY
+            del self.env.agentSet[self.getId()]
+            self.env.grilleAgent[x][y] = None
 
 
     def __str__(self):

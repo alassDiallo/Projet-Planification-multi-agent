@@ -36,7 +36,6 @@ class TacheAllocation :
     #cette fonction permet de lancer ou plutot d'initialiser une enchere pour un tresor pour l'allocation des taches
     def start_auction_for_treasure(self, treasure,i,j):
         # Initialiser une enchère pour un trésor donné
-        print(treasure,"____________________________")
         self.auctions.append({'treasure': treasure, 'bids': {},'position':(i,j)})
 
     #cette fonction permet de retrouver l'enchere correspondant a une offre ou chaque agent fait sont offre
@@ -58,12 +57,11 @@ class TacheAllocation :
             agent = self.env.agentSet[agent_id]
             agent.bag_contents.append({"treasure":auction['treasure'],"position":auction['position']})
             print(f"Agent {agent_id} wins auction for treasure : {auction['treasure']} with bid {bid_amount}")
-            print(len(agent.bag_contents))
         self.auctions.clear()
 
     def in_bounds(self, id):
         (x, y) = id
-        return 0 <= x < self.env.tailleX and 0 <= y < self.env.tailleY and self.env.grilleAgent[x][y] is None or self.env.grilleTres[x][y] is None
+        return 0 <= x < self.env.tailleX and 0 <= y < self.env.tailleY and (self.env.grilleAgent[x][y] is None or self.env.grilleTres[x][y] is None) and id != self.env.posUnload
 
     def passable(self, id):
         (x, y) = id
@@ -88,7 +86,7 @@ class TacheAllocation :
         
     #dans cette fonction nous recuperrons l'enssemble des agents et nous les retournant en fonction de leur type
     def getAgent(self):
-        pierre,por  =  self.getTresor()
+        pierre,por,somme  =  self.getTresor()
         #print(pierre)
         #print(por)
         ramasseurOR=[]
@@ -98,39 +96,30 @@ class TacheAllocation :
              for j in range(self.env.tailleY):
                 if self.env.grilleAgent[i][j] is not None:
                     if type(self.env.grilleAgent[i][j]) == MyAgentStones:
-                        print("Ramasseur de pierre [",i,",",j,"]")
                         ramasseurPierre.append(self.env.grilleAgent[i][j])
-                        #for c in range(len(pierre)):
-                            #dist = abs(i - pierre[c][0]) + abs(j - pierre[c][1])
-                            #print(i,"-",pierre[c][0],"+",j,"-",pierre[c][1],"=",dist)
                     elif type(self.env.grilleAgent[i][j]) == MyAgentChest:
-                        print("Deverouilleur [",i,",",j,"]")
                         Deverouilleur.append(self.env.grilleAgent[i][j])
                     elif type(self.env.grilleAgent[i][j]) == MyAgentGold:
-                        print("Ramasseur de d'or [",i,",",j,"]")
                         ramasseurOR.append(self.env.grilleAgent[i][j])
-                    #if self.env.grilleAgent[i][j].type == 1:
-                    #    print("position : [",i,",",j,"]",self.env.grilleTres[i][j].type," OR")
-                    #elif self.env.grilleTres[i][j].type == 2:
-                    #    print("position : [",i,",",j,"]",self.env.grilleTres[i][j].type," Pierre")
         return (ramasseurPierre,ramasseurOR,Deverouilleur)
-        #treasure_task = Task("Collect treasures and open chests", pierre)
-        # Lancement de l'enchère
-        #auction_process(treasure_task, ramasseurPierre)
+    
 
     def getTresor(self):
         pierre = []
+        somme =0
         por = []
         for i in range(self.env.tailleX):
              for j in range(self.env.tailleY):
                 if self.env.grilleTres[i][j] is not None:
                     if self.env.grilleTres[i][j].type == 1:
-                        print("position : [",i,",",j,"]",self.env.grilleTres[i][j].type," OR")
+                        somme +=self.env.grilleTres[i][j].value
                         pierre.append([i,j])
                     elif self.env.grilleTres[i][j].type == 2:
-                        print("position : [",i,",",j,"]",self.env.grilleTres[i][j].type," Pierre")
+                        somme +=self.env.grilleTres[i][j].value
                         por.append([i,j])
-        return(pierre,por)
+        
+        return(pierre,por,somme)
+        
     
 
     """cette methode nous permet de calculer la distance entre un agent et un tresor donnée.
@@ -201,4 +190,8 @@ class TacheAllocation :
         
         # Reconstruire et retourner le chemin...
         return self.reconstruct_path(came_from=came_from,start=start,goal= goal)
+    
+
+
+    
 
