@@ -45,20 +45,29 @@ class Planification():
                     agent1, agent2 = self.env.agentSet[agent1_id], self.env.agentSet[agent2_id]
                     if agent1.priority > agent2.priority:
                         # Assurez-vous que l'index pour l'insertion est dans les limites
-                        
                         agent1.send(agent2.getId(),f"{step1,step2,position_conflit}")
                         agent2.readMail()
                         if step2 < len(agent2.plan):
                             agent2.plan.insert(step2 - 1, agent2.plan[step2-1])
                         else:
                             # Gérer le cas où step2 est à la fin du plan
+                            #agent2.plan.append(agent2.plan[-1])
                             x,y = agent2.posX,agent2.posY
                             self.env.grilleAgent[x][y]=None
                             del self.env.agentSet[agent2_id]
                             print("---------",self.env.grilleAgent[x][y])
                             
                     else: 
-                        if agent2.priority > agent1.priority:
+                        agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
+                        agent1.readMail()
+                        if step1 < len(agent1.plan):
+                            agent1.plan.insert(step1 - 1, agent1.plan[step1-1])
+                        else:
+                            #agent1.plan.append(agent1.plan[-1])
+                            x,y = agent1.posX,agent1.posY
+                            self.env.grilleAgent[x][y]=None
+                            del self.env.agentSet[agent1_id]
+                        """if agent2.priority > agent1.priority:
                             agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
                             agent1.readMail()
                             if step1 < len(agent1.plan):
@@ -71,7 +80,8 @@ class Planification():
                         elif agent1.priority == agent2.priority:
                             ag1 =  int(agent1.getId()[-1])
                             ag2 = int(agent2.getId()[-1])
-                            if ag1 > ag2:
+                            ag1.goal[0]
+                            #if ag1 > ag2:
                                 
                                 agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
                                 agent1.readMail()
@@ -94,7 +104,7 @@ class Planification():
                                     # Gérer le cas où step2 est à la fin du plan
                                     x,y = agent2.posX,agent2.posY
                                     self.env.grilleAgent[x][y]=None
-                                    #agent2.plan.append(m)
+                                    #agent2.plan.append(m)"""
                 except KeyError as e:
                     print(f"Clé non trouvée dans agentSet: {e}")
 

@@ -126,6 +126,9 @@ class MyAgentChest(MyAgent) :
             del self.env.agentSet[self.getId()]
             self.env.grilleAgent[x][y] = None
 
+    def calculDistance(self):
+        pass
+
             
 
     
