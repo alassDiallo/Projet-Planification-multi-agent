@@ -2,8 +2,6 @@ from MyAgent import MyAgent
 import math
 
 
-
-
 #inherits MyAgent
 
 class MyAgentStones(MyAgent):
@@ -46,14 +44,20 @@ class MyAgentStones(MyAgent):
         res ="agent Stone "+ self.id + " ("+ str(self.posX) + " , " + str(self.posY) + ")"
         return res
 
+    """
+    -Cette methode permet à un agent de soumettre une offre pour une enchere d'un tresors
+    - l'agent evalue sa distance et sa capacité de sac par rapport à la valeur du tresor
+    """
     def make_bid(self, treasure,i,j,tache):
         if treasure.type == 2 and self.backPack - self.stone >= treasure.value:
             distance = self.calculate_distance_to(i,j)
             bid_amount = self.evaluate_bid(distance, self.backPack)
             tache.bid_on_treasure(self.id, treasure, bid_amount)
 
+
     def calculate_distance_to(self, i,j):
-        #distances_to_treasures = abs(self.posX - i) + abs(self.posY - j)
+        #calcul de la distance entre l'agent et le tresor mit en echere
+        #utilisation de la distance euclidienne pour prendre en compte les deplacements en diagonal 
         distances_to_treasures = math.sqrt(((i - self.posX)**2 + (j-self.posY )**2))
         return distances_to_treasures
 
@@ -62,10 +66,14 @@ class MyAgentStones(MyAgent):
         bid_value = distance
         return bid_value
     
+    #cette methode permet de trouver le chemin vers le tresor le plus proche
     def trouver_chemin_vers_tresor_plus_proche(self, tache):
         # Trouver le trésor le plus proche
         content = self.backPack - self.stone
         treasure = [ t for t in self.bag_contents if (self.backPack - self.stone) >= t['treasure'].value]
+         #on test s'il y'a des tresors qui peuvent etre ramasser par l'agent
+        # si tel est le cas on selectionne le tresor le plus proche de la l'agent à partir de sa position et on retourne le chemin vers ce tresor
+        # sinon on dit tout simplement à l'agent d'aller vider son sac et de revenir chercher le tresor en retournant le chemin vers le point de collecte
         if treasure:
             t = treasure[0]
             chemin = tache.a_star_search(start=(self.posX,self.posY), goal=t["position"],grid=tache)
@@ -81,7 +89,13 @@ class MyAgentStones(MyAgent):
         else:
             chemin_vers_depot = tache.a_star_search(start=(self.posX,self.posY), goal=self.env.posUnload,grid=tache)
             return chemin_vers_depot, None
+        
 
+    """
+    l'agent construit son plan individuel à partir de cette methode.
+    L'agent construis son chemin vers le tresors le plus proche ensuite à partir de là aller vers le tresor le plus proche de sa position si 
+    sa capacité de sac restant le lui permet sinon il se dirige vers le point de collecte pour decharger son sac et ensuite aller vers le trésor le plus proche pour le ramasser
+    """
         
     def planindividuel(self,tache):
         x,y = self.posX,self.posY
@@ -107,6 +121,7 @@ class MyAgentStones(MyAgent):
         # Retourne True si toutes les actions du plan ont été effectuées
         return self.index_plan >= len(self.plan)
         
+    #Execution du plan d'un agent avec l'ensemble des actions qu'il dois faire
     def executionPlanIndividuel(self):
         x = self.index_plan
         if not self.plan_termine():
@@ -117,6 +132,7 @@ class MyAgentStones(MyAgent):
                 else:
                     if self.stone > 0:
                         self.unload()
+                        self.personalScore += 1
                     else:
                         self.index_plan += 1
                         if x < len(self.plan):
@@ -134,6 +150,7 @@ class MyAgentStones(MyAgent):
         else:
             if self.stone > 0 and self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
                 self.unload()
+                self.personalScore += 1
             x, y = self.posX, self.posY
             del self.env.agentSet[self.getId()]
             self.env.grilleAgent[x][y] = None

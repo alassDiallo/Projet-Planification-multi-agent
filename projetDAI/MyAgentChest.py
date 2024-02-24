@@ -60,6 +60,10 @@ class MyAgentChest(MyAgent) :
         # Retourne True si toutes les actions du plan ont été effectuées
         return self.index_plan >= len(self.plan)
         
+    """
+    l'agent construit son plan individuel à partir de cette methode.
+    L'agent construis son chemin vers le tresors le plus proche ensuite à partir de là aller vers le tresor le plus proche de sa position 
+    """
     def planindividuel(self,tache):
         x,y = self.posX,self.posY
         while self.bag_contents:
@@ -71,48 +75,15 @@ class MyAgentChest(MyAgent) :
         self.plan.insert(0,(x,y))
         self.posX,self.posY=x,y
     
-    """def executionPlanIndividuel(self):
-        x = self.index_plan
-        if not self.plan_termine():
-            if (self.posX,self.posY) in self.goal:
-                self.open()
-                self.goal.remove((self.posX,self.posY))
-            else:
-                if x+1 < len(self.plan):
-                    print("position ",self.plan[x],self.plan[x+1])
-                    coor = self.plan[x+1]
-                    x,y=self.plan[x]
-                    s= (x,y,coor[0],coor[1])
-                    print(self,s)
-                    move = self.move(x,y,coor[0],coor[1])
-                    #move = self.move(self.posX,self.posY,coor[0],coor[1])
-                    if move == 1:
-                        pass
-                    else:
-                        self.posX,self.posY=coor
-                    self.index_plan = self.index_plan + 1
-                else:
-                    x,y=self.posX,self.posY
-                    print(self.env.agentSet)
-                    self.env.agentSet = { a_id:agent for a_id,agent in self.env.agentSet.items() if a_id != self.getId()}
-                    print(self.env.agentSet)
-                    print("fin plan avant supp----------------------------- ",self.env.grilleAgent[x][y])
-                    self.env.grilleAgent[x][y]=None
-                    print("fin plan apres supp----------------------------- ",self.env.grilleAgent[x][y])
-                    #return True
-            self.index_plan = self.index_plan + 1
-                #return move
-        else:
-            x,y=self.posX,self.posY
-            print("fin plan avant supp ",self.env.grilleAgent[x][y])
-            del self.env.agentSet[self.getId()]
-            self.env.grilleAgent[x][y]=None
-            print("fin plan apres supp ",self.env.grilleAgent[x][y])"""
+    """
+    Dans cette methode l'agent execute son plan individuel avec la sequence d'actions qu'il doit faire
+    """
     def executionPlanIndividuel(self):
         x = self.index_plan
         if not self.plan_termine():
             if (self.posX, self.posY) in self.goal:
                 self.open()
+                self.personalScore += 1
                 self.goal.remove((self.posX, self.posY))
             else:
                 self.index_plan += 1
@@ -126,8 +97,6 @@ class MyAgentChest(MyAgent) :
             del self.env.agentSet[self.getId()]
             self.env.grilleAgent[x][y] = None
 
-    def calculDistance(self):
-        pass
 
             
 

@@ -98,6 +98,11 @@ class MyAgentGold(MyAgent):
     Dans cette methode l'agent construit son plan individuel à partir des taches qui lui sont attribuées cad
     Il fait son plan en prenant en compte le tresor qui se situe le plus proche de sa position
     """  
+    """
+    l'agent construit son plan individuel à partir de cette methode.
+    L'agent construis son chemin vers le tresors le plus proche ensuite à partir de là aller vers le tresor le plus proche de sa position si 
+    sa capacité de sac restant le lui permet sinon il se dirige vers le point de collecte pour decharger son sac et ensuite aller vers le trésor le plus proche pour le ramasser
+    """
     def planindividuel(self,tache):
         #on recuper les position initiales de l'agent pour ne pas les perdre 
         x,y = self.posX,self.posY
@@ -131,7 +136,7 @@ class MyAgentGold(MyAgent):
     def plan_termine(self):
         # Retourne True si toutes les actions du plan ont été effectuées
         return self.index_plan >= len(self.plan)
-
+    #Execution du plan d'un agent avec l'ensemble des actions qu'il dois faire
     def executionPlanIndividuel(self):
         x = self.index_plan
         if not self.plan_termine():
@@ -142,6 +147,7 @@ class MyAgentGold(MyAgent):
                 else:
                     if self.gold > 0:
                         self.unload()
+                        self.personalScore += 1
                     else:
                         self.index_plan += 1
                         if x < len(self.plan):
@@ -159,6 +165,7 @@ class MyAgentGold(MyAgent):
         else:
             if self.gold > 0 and self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
                 self.unload()
+                self.personalScore += 1
             x, y = self.posX, self.posY
             del self.env.agentSet[self.getId()]
             self.env.grilleAgent[x][y] = None

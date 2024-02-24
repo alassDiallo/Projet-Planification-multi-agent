@@ -20,7 +20,7 @@ class Planification():
                             conflit_key = frozenset({id_agent, other_id, position})
                             if conflit_key not in conflits:
                                 conflits[conflit_key] = (step, other_step)
-        print("on ",len(conflits)," conflits")
+        print("On a ",len(conflits)," conflits")
         return conflits
     
     """
@@ -45,7 +45,7 @@ class Planification():
                     agent1, agent2 = self.env.agentSet[agent1_id], self.env.agentSet[agent2_id]
                     if agent1.priority > agent2.priority:
                         # Assurez-vous que l'index pour l'insertion est dans les limites
-                        agent1.send(agent2.getId(),f"{step1,step2,position_conflit}")
+                        agent1.send(agent2.getId(),f"{step1,agent1.priority,position_conflit}")
                         agent2.readMail()
                         if step2 < len(agent2.plan):
                             agent2.plan.insert(step2 - 1, agent2.plan[step2-1])
@@ -58,7 +58,7 @@ class Planification():
                             print("---------",self.env.grilleAgent[x][y])
                             
                     else: 
-                        agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
+                        agent2.send(agent1.getId(),f"{step1,agent2.priority,position_conflit}")
                         agent1.readMail()
                         if step1 < len(agent1.plan):
                             agent1.plan.insert(step1 - 1, agent1.plan[step1-1])
@@ -67,73 +67,42 @@ class Planification():
                             x,y = agent1.posX,agent1.posY
                             self.env.grilleAgent[x][y]=None
                             del self.env.agentSet[agent1_id]
-                        """if agent2.priority > agent1.priority:
-                            agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
-                            agent1.readMail()
-                            if step1 < len(agent1.plan):
-                                agent1.plan.insert(step1 - 1, agent1.plan[step1-1])
-                            else:
-                                x,y = agent1.posX,agent1.posY
-                                self.env.grilleAgent[x][y]=None
-                                del self.env.agentSet[agent1_id]
-                                #agent1.plan.append(m)
-                        elif agent1.priority == agent2.priority:
-                            ag1 =  int(agent1.getId()[-1])
-                            ag2 = int(agent2.getId()[-1])
-                            ag1.goal[0]
-                            #if ag1 > ag2:
-                                
-                                agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
-                                agent1.readMail()
-                                #agent = agent1
-                                if step1 < len(agent1.plan):
-                                    agent1.plan.insert(step1 - 1, agent1.plan[step1-1])
-                                else:
-                                    # Gérer le cas où step2 est à la fin du plan
-                                    x,y = agent1.posX,agent1.posY
-                                    
-                                    self.env.grilleAgent[x][y]=None
-                                    del self.env.agentSet[agent1_id]
-                                   
-                            else:
-                                agent2.send(agent1.getId(),f"{step1,step2,position_conflit}")
-                                agent1.readMail()
-                                if step2 < len(agent2.plan):
-                                    agent2.plan.insert(step2 - 1, agent2.plan[step2-1])
-                                else:
-                                    # Gérer le cas où step2 est à la fin du plan
-                                    x,y = agent2.posX,agent2.posY
-                                    self.env.grilleAgent[x][y]=None
-                                    #agent2.plan.append(m)"""
+                        
                 except KeyError as e:
                     print(f"Clé non trouvée dans agentSet: {e}")
+
+    """
+    Pour l'execution du plan global on fait appel à cette methode qui defini un nombre de tour pour l'execution du plan global
+    - Il faudra fixer le nombre de Tour maximal pour l'execution des tache ici nous avons donné 100
+    """
 
     def executonPlanGlobal(self):
         while not self.tous_les_plans_termines():
             print(f"Tour {self.tour}:")
-            
             # Créer une copie des clés du dictionnaire
             agent_ids = list(self.env.agentSet.keys())
-            
             for agent_id in agent_ids:
                 agent = self.env.agentSet[agent_id]
                 if not agent.plan_termine() or not self.tous_tresors_ramasses():
                     agent.executionPlanIndividuel()
-            
             self.tour += 1
+            print(self.env)
             if self.tour > 100:  # Prévenir une boucle infinie
                 print("Limite de tours atteinte.")
                 break
+        print("fin de l'execution du plan global")
 
+    """
+    Cette methode permet de voir à chaque tour s'il reste encore des agents qui n'ont pas terminés leur plan 
+    """
     def tous_les_plans_termines(self):
         # Vérifie si tous les agents ont terminé leurs plans
         return all(self.env.agentSet[agent].plan_termine() for agent in self.env.agentSet)
 
+    """
+    Cette methode return l'ensemble des tresors qui ont été ramasser aprés l'execution du plan global
+    """
     def tous_tresors_ramasses(self):
         a = all(tresor is None for row in self.env.grilleTres for tresor in row)
         print(a)
-        #return all(tresor is None for row in self.grilleTres for tresor in row)
-
-    def somme_valeurs_tresors(self):
-        pr,po,som=TacheAllocation(env=self.env).getTresor()
-        return som
+        return a

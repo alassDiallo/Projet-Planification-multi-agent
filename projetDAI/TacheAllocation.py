@@ -86,7 +86,7 @@ class TacheAllocation :
         
     #dans cette fonction nous recuperrons l'enssemble des agents et nous les retournant en fonction de leur type
     def getAgent(self):
-        pierre,por,somme  =  self.getTresor()
+        pierre,por  =  self.getTresor()
         #print(pierre)
         #print(por)
         ramasseurOR=[]
@@ -106,19 +106,16 @@ class TacheAllocation :
 
     def getTresor(self):
         pierre = []
-        somme =0
         por = []
         for i in range(self.env.tailleX):
              for j in range(self.env.tailleY):
                 if self.env.grilleTres[i][j] is not None:
                     if self.env.grilleTres[i][j].type == 1:
-                        somme +=self.env.grilleTres[i][j].value
                         pierre.append([i,j])
                     elif self.env.grilleTres[i][j].type == 2:
-                        somme +=self.env.grilleTres[i][j].value
                         por.append([i,j])
         
-        return(pierre,por,somme)
+        return(pierre,por)
         
     
 

@@ -11,7 +11,8 @@ class MyAgent:
         self.env = env
         self.mailBox = []
         self.plan = []
-        self.index_plan = 0
+        self.index_plan = 1
+        self.personalScore=0
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
