@@ -137,6 +137,7 @@ class MyAgentStones(MyAgent):
                         self.index_plan += 1
                         if x < len(self.plan):
                             coor = self.plan[x]
+                            print(self.posX, self.posY, coor[0], coor[1])
                             move = self.move(self.posX, self.posY, coor[0], coor[1])
                             if move != 1:
                                 self.posX, self.posY = coor
@@ -144,7 +145,9 @@ class MyAgentStones(MyAgent):
                 self.index_plan += 1
                 if x < len(self.plan):
                     coor = self.plan[x]
+                    print(self.posX, self.posY, coor[0], coor[1])
                     move = self.move(self.posX, self.posY, coor[0], coor[1])
+                    
                     if move != 1:
                         self.posX, self.posY = coor
         else:

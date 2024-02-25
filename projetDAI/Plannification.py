@@ -14,6 +14,7 @@ class Planification():
         for id_agent, agent in self.env.agentSet.items():
             for step, position in enumerate(agent.plan):
                 for other_id, other_agent in self.env.agentSet.items():
+                    #l'agent envoie son plan aux autres agents et vice versa par communication
                     if other_id != id_agent and position in other_agent.plan:
                         other_step = other_agent.plan.index(position)
                         if step == other_step:
@@ -86,7 +87,7 @@ class Planification():
                 if not agent.plan_termine() or not self.tous_tresors_ramasses():
                     agent.executionPlanIndividuel()
             self.tour += 1
-            print(self.env)
+            #print(self.env)
             if self.tour > 100:  # Prévenir une boucle infinie
                 print("Limite de tours atteinte.")
                 break
