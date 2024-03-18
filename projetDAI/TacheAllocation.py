@@ -28,9 +28,6 @@ class TacheAllocation :
             for y in range(self.env.tailleY):
                 if self.env.grilleAgent[x][y] is not None:
                     grid[x][y] = 1  # 1 pour un obstacle
-    
-    # Note: Pas besoin de marquer les trésors pour le calcul du chemin, 
-    # mais vous pouvez choisir de le faire si cela influence le calcul du chemin
         return grid
 
     #cette fonction permet de lancer ou plutot d'initialiser une enchere pour un tresor pour l'allocation des taches
@@ -163,7 +160,7 @@ class TacheAllocation :
     cette methode permet de trouver le chemin le plus court à parcourir entre un agent et sa cible(tresors ou point de collecte)
     """
     def a_star_search(self,start=(0,5), goal=(5,8), grid=None):
-        # Initialisation...
+        # Initialisation d'une file pour trouver le chemin le plus rapide
         open_set = PriorityQueue()
         open_set.put(start, 0)
         came_from = {}

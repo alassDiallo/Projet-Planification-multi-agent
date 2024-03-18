@@ -81,10 +81,11 @@ class MyAgentChest(MyAgent) :
     def executionPlanIndividuel(self):
         x = self.index_plan
         if not self.plan_termine():
+            #si l'agent arrve à une position d'un tresor c'est dire il est à un de ses but alors il fait un open pour ouvrir le coffre du tresor
             if (self.posX, self.posY) in self.goal:
                 self.open()
-                self.personalScore += 1
                 self.goal.remove((self.posX, self.posY))
+            #sinon il fait un move
             else:
                 self.index_plan += 1
                 if x < len(self.plan):
@@ -94,6 +95,7 @@ class MyAgentChest(MyAgent) :
                     
                     if move != 1:
                         self.posX, self.posY = coor
+        #si son plan est fini alors on le supprime de l'environnement
         else:
             x, y = self.posX, self.posY
             del self.env.agentSet[self.getId()]

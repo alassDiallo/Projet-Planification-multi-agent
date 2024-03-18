@@ -54,7 +54,6 @@ class MyAgentGold(MyAgent):
         #utilisation de la distance Manhattan
         #distances_to_treasures = abs(self.posX - i) + abs(self.posY - j)
         #utilisation de la distance euclidienne vu que les deplacements en diagonals sont permis
-        #distances_to_treasures = ((self.posX - i)**2 + (self.posY - j)**2) ** 0.5
         distances_to_treasures = math.sqrt(((i - self.posX)**2 + (j-self.posY )**2))
         return distances_to_treasures
 
@@ -141,13 +140,16 @@ class MyAgentGold(MyAgent):
         x = self.index_plan
         if not self.plan_termine():
             if (self.posX, self.posY) in self.goal:
+                #si l'agent arrve à une position d'un tresor c'est dire il est à un de ses but qui different du point de collecte alors il fait un load
                 if not self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
                     self.env.load(self)
                     self.goal.remove((self.posX, self.posY))
+                #sinon il est au point de collect donc il doit faire un unload
                 else:
+                    #Pour faire un unload il faut qu'il est quelque chose dans son sac 
                     if self.gold > 0:
                         self.unload()
-                        self.personalScore += 1
+                    #sinon il fait un move
                     else:
                         self.index_plan += 1
                         if x < len(self.plan):
@@ -156,6 +158,7 @@ class MyAgentGold(MyAgent):
                             move = self.move(self.posX, self.posY, coor[0], coor[1])
                             if move != 1:
                                 self.posX, self.posY = coor
+            #s'il n'est pas dans une des positions de ses buts alors il se deplace
             else:
                 self.index_plan += 1
                 if x < len(self.plan):
@@ -164,14 +167,13 @@ class MyAgentGold(MyAgent):
                     move = self.move(self.posX, self.posY, coor[0], coor[1])
                     if move != 1:
                         self.posX, self.posY = coor
+        #si son plan est fini alors s'il a quelque chose dans son sac il le depose et on le supprime de l'environnement
         else:
             if self.gold > 0 and self.env.isAt(self, self.env.posUnload[0], self.env.posUnload[1]):
                 self.unload()
-                self.personalScore += 1
             x, y = self.posX, self.posY
             del self.env.agentSet[self.getId()]
             self.env.grilleAgent[x][y] = None
-
 
     def __str__(self):
         res = "agent Gold "+  self.id + " ("+ str(self.posX) + " , " + str(self.posY) + ")"

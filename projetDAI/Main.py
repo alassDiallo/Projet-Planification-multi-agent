@@ -108,8 +108,7 @@ def main():
         
 
     ##################### DEBUT PLAN GLOBAL ET RESOLUTION DE CONFLITS ##########
-    #Plan global avec resolution des conflits
-    #Planification(env=env).resoudre_conflits()
+   
     for a in lAg.values() :
         print("--------------------------------------------------")
         print(a)
@@ -117,9 +116,10 @@ def main():
         print("--------------------------------------------------")
         print("\n")
     print(env)
-
+    #Plan global avec resolution des conflits
     for a in lAg.values() :
         a.detecter_et_negocier_conflits(tache)
+    
         
     for a in lAg.values() :
         print("--------------------------------------------------")
